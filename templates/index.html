@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Merger</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>PDF Merger</h1>
+    <form id="upload-form" action="/merge" method="post" enctype="multipart/form-data">
+        <input type="file" name="files" multiple required>
+        <button type="submit">Merge PDFs</button>
+    </form>
+    <div id="status"></div>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        const statusDiv = document.getElementById('status');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            statusDiv.innerHTML = 'Merging...';
+
+            const formData = new FormData(form);
+            const response = await fetch('/merge', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'merged.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                statusDiv.innerHTML = 'Merge successful! Your download should start automatically.';
+            } else {
+                statusDiv.innerHTML = 'An error occurred during merging.';
+            }
+        });
+    </script>
+</body>
+</html>
